@@ -25,15 +25,17 @@ def create_message_endpoint(conversation_id:int,
     db:Session = Depends(get_db)
                             ):
 
-    conversation = (db.query(Conversation).filter(Conversation.id== conversation_id,
-    Conversation.user_id== current_user.id).first())
+    message = create_message(db,
+                             conversation_id,
+                             current_user.id,
+                             message_data)
 
-    if not conversation:
+    if not message:
         raise HTTPException(
             status_code=404,
             detail="conversation not found"
         )
-    return create_message(db,conversation_id,message_data)
+    return message
 
 @router.get("/{conversation_id}/messages")
 def get_messages(
@@ -42,13 +44,14 @@ def get_messages(
     db:Session = Depends(get_db)
 ):
 
-    conversation= (db.query(Conversation).filter(Conversation.id== conversation_id,
-    Conversation.user_id== current_user.id).first())
+    messages=get_conversation_messages(db,
+                                       conversation_id,
+                                       current_user.id)
 
-    if not conversation:
+    if not messages:
         raise HTTPException(
             status_code=404,
             detail="Conversation not found"
         )
     
-    return get_conversation_messages(db,conversation_id)
+    return messages
